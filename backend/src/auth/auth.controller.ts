@@ -1,15 +1,68 @@
-import { Controller, Post, Request, UseGuards } from '@nestjs/common';
+// backend/src/auth/auth.controller.ts
+import {
+  Controller,
+  Post,
+  Body,
+  Request,
+  UseGuards,
+  Get,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
-import { Request as ReqType } from 'express';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
+import { RegisterDto } from './dto/register.dto';
+
+/**
+ * AuthController
+ * --------------
+ *  • POST /auth/register   — регистрация пользователя  
+ *  • POST /auth/login      — логин (LocalStrategy) → access + refresh  
+ *  • POST /auth/refresh    — обновление access-токена по refresh-токену  
+ *  • GET  /auth/profile    — текущий пользователь (JWT)  
+ */
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
+  /* ------------------------------------------------------------------
+   *  Регистрация
+   * ---------------------------------------------------------------- */
+  @Post('register')
+  async register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
+  }
+
+  /* ------------------------------------------------------------------
+   *  Логин (LocalStrategy: email + password)
+   * ---------------------------------------------------------------- */
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Request() req: ReqType) {
+  @HttpCode(HttpStatus.OK)
+  async login(@Request() req) {
+    // LocalStrategy кладёт user в req
     return this.authService.login(req.user);
+  }
+
+  /* ------------------------------------------------------------------
+   *  Обновление access-токена
+   * ---------------------------------------------------------------- */
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(@Body('refreshToken') token: string) {
+    return this.authService.refreshAccessToken(token);
+  }
+
+  /* ------------------------------------------------------------------
+   *  Профиль текущего пользователя
+   * ---------------------------------------------------------------- */
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async profile(@Request() req) {
+    // убираем пароль из выдачи
+    const { password, ...safeUser } = req.user;
+    return safeUser;
   }
 }
