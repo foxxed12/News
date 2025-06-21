@@ -15,9 +15,11 @@ import {
   BadRequestException,
   DefaultValuePipe,
 } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
+import { NewsStatus } from './entities/news.entity';
 import { UpdateNewsDto } from './dto/update-news.dto';
 
 /**
@@ -39,7 +41,7 @@ export class NewsController {
    */
   @Get()
   async findAll(
-    @Query('status') status = 'published',
+    @Query('status') status: NewsStatus = NewsStatus.PUBLISHED,
     @Query('category') category?: string,
     @Query('tags', new ParseArrayPipe({ items: String, optional: true, separator: ',' }))
     tags?: string[],
@@ -90,8 +92,8 @@ export class NewsController {
    */
   @Post()
   @UseGuards(JwtAuthGuard)
-  async create(@Body() dto: CreateNewsDto, @Request() req) {
-    return this.newsService.create(dto, req.user);
+  async create(@Body() dto: CreateNewsDto, @Request() req: ExpressRequest) {
+    return this.newsService.create(dto, req.user as any);
   }
 
   /** Обновление новости */
@@ -100,9 +102,9 @@ export class NewsController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateNewsDto,
-    @Request() req,
+    @Request() req: ExpressRequest,
   ) {
-    return this.newsService.update(id, dto, req.user);
+    return this.newsService.update(id, dto, req.user as any);
   }
 
   /** Автосохранение черновика (PATCH /news/123/autosave body:{content}) */
@@ -111,10 +113,10 @@ export class NewsController {
   async autosave(
     @Param('id', ParseIntPipe) id: number,
     @Body('content') content: string,
-    @Request() req,
+    @Request() req: ExpressRequest,
   ) {
     if (!content?.trim()) throw new BadRequestException('empty content');
-    return this.newsService.autosaveDraft(id, content, req.user);
+    return this.newsService.autosaveDraft(id, content, req.user as any);
   }
 
   /** Перевод в статус «опубликовано сейчас» */

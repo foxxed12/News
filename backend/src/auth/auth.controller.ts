@@ -9,6 +9,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -41,7 +42,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Request() req) {
+  async login(@Request() req: ExpressRequest) {
     // LocalStrategy кладёт user в req
     return this.authService.login(req.user);
   }
@@ -60,9 +61,9 @@ export class AuthController {
    * ---------------------------------------------------------------- */
   @UseGuards(JwtAuthGuard)
   @Get('profile')
-  async profile(@Request() req) {
-    // убираем пароль из выдачи
-    const { password, ...safeUser } = req.user;
+  async profile(@Request() req: ExpressRequest) {
+    const user = req.user as any;
+    const { password, ...safeUser } = user || {};
     return safeUser;
   }
 }

@@ -16,9 +16,9 @@ import ReactDOM from 'react-dom/client';
 import { RouterProvider } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 
-import './index.css';               // Tailwind базовые стили + overrides
-import { router } from './router';  // создан в src/router/index.tsx
-import ToastProvider from './components/ToastProvider';
+import '../index.css';               // Tailwind базовые стили + overrides
+import { router } from '../index';  // создан в src/index.tsx
+import ToastProvider from '../components/ToastProvider';
 
 /* ------------------------------------------------------------------ */
 /*  Render                                                            */
