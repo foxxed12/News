@@ -7,6 +7,7 @@ import {
 import { join } from 'node:path';
 import { existsSync, mkdirSync } from 'node:fs';
 import * as sharp from 'sharp';
+import { Express } from 'express';
 
 /**
  * UploadsService

@@ -28,6 +28,17 @@ export class AuthService {
     };
   }
 
+  async refreshAccessToken(token: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(token);
+      const user = await this.usersService.findById(payload.sub);
+      if (!user) throw new UnauthorizedException();
+      return this.login(user);
+    } catch {
+      throw new UnauthorizedException();
+    }
+  }
+
   async register(registerDto: RegisterDto) {
   const existing = await this.usersService.findByEmail(registerDto.email);
   if (existing) {
